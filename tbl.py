@@ -1,7 +1,6 @@
 import sublime
 import sublime_plugin
 import re
-from itertools import takewhile 
 
 class TblCommand(sublime_plugin.TextCommand):
     def run(self, edit):
@@ -17,7 +16,6 @@ class TblCommand(sublime_plugin.TextCommand):
                 all_tokens.append(tokens)
                 tokens_count = len(tokens)
                 len_lengths = len(lengths)
-                print(len_lengths)
                 for col in range(0, tokens_count):
                     len_token = max(1, len(tokens[col]))
                     if col >= len_lengths:

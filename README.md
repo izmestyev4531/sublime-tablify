@@ -1,1 +1,3 @@
 # sublime-tablify
+
+![](tablify.gif)
