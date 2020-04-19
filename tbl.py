@@ -1,6 +1,7 @@
 import sublime
 import sublime_plugin
 import re
+from itertools import takewhile 
 
 class TblCommand(sublime_plugin.TextCommand):
     def run(self, edit):
@@ -11,6 +12,8 @@ class TblCommand(sublime_plugin.TextCommand):
             all_tokens = []
             for line in lines:
                 tokens = re.findall("(?:^|,)\s*\"?((?<=(?<!\")\")(?:[^\"]*|(?:[^\"]*\"[^\"]*\"[^\"]*)+?)(?=\"(?!\"))|[^,]*)\"?(?=\s*,|\s*$)", line)
+                while tokens[-1]=="": 
+                    tokens.pop() 
                 all_tokens.append(tokens)
                 tokens_count = len(tokens)
                 len_lengths = len(lengths)
@@ -64,3 +67,22 @@ class TblCommand(sublime_plugin.TextCommand):
                         else:
                             table += "╬"
             self.view.replace(edit, selected_region, table)
+
+class DetblCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        for selected_region in self.view.sel():
+            text = self.view.substr(selected_region)
+            lengths = []
+            lines = text.split("\n")
+            all_tokens = []
+            new_text = ""
+            for line in lines:
+                tokens = re.findall("(?<=║)[^║]+", line)
+                if len(tokens) > 0:
+                    if new_text!="":
+                        new_text += "\n"
+                    new_tokens = list(map(lambda t: t.strip() if t.find(',') == -1 else "\"" + t.strip() + "\"", tokens))
+                    while new_tokens[-1]=="": 
+                        new_tokens.pop() 
+                    new_text += ",".join(new_tokens)   
+            self.view.replace(edit, selected_region, new_text)
