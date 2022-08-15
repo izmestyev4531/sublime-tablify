@@ -3,6 +3,9 @@ import sublime_plugin
 import re
 
 class TblCommand(sublime_plugin.TextCommand):
+
+    pad = 1
+
     def run(self, edit):
         for selected_region in self.view.sel():
             text = self.view.substr(selected_region)
@@ -13,6 +16,7 @@ class TblCommand(sublime_plugin.TextCommand):
                 tokens = re.findall("(?:^|,)\s*\"?((?<=(?<!\")\")(?:[^\"]*|(?:[^\"]*\"[^\"]*\"[^\"]*)+?)(?=\"(?!\"))|[^,]*)\"?(?=\s*,|\s*$)", line)
                 while tokens[-1]=="": 
                     tokens.pop() 
+                tokens = list(map(lambda t:  self.pad * " " + t + self.pad * " ", tokens))    
                 all_tokens.append(tokens)
                 tokens_count = len(tokens)
                 len_lengths = len(lengths)
@@ -84,3 +88,19 @@ class DetblCommand(sublime_plugin.TextCommand):
                         new_tokens.pop() 
                     new_text += ",".join(new_tokens)   
             self.view.replace(edit, selected_region, new_text)
+
+
+class FrmCommand(sublime_plugin.TextCommand):
+
+    pad = 1
+
+    def run(self, edit):
+        for selected_region in self.view.sel():
+            text = self.view.substr(selected_region)
+            lines = list(map(lambda line: line.replace('\t', ' ') , text.split("\n")))
+            length = len(max(lines, key=len))
+            new_text = "╔" + ((length + 2 * self.pad) * "═") + "╗"
+            for line in lines:
+                new_text += "\n║" + (self.pad * " ") + line + ((length - len(line)) * " ") + (self.pad * " ") + "║"  
+            new_text += "\n╚" + ((length + 2 * self.pad) * "═") + "╝"
+            self.view.replace(edit, selected_region, new_text)            
